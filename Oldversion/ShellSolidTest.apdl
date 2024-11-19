@@ -1,0 +1,46 @@
+FINISH
+/CLEAR
+
+/INPUT,'Air_Ring','in' 
+
+/PREP7
+
+ET,3,TARGE170
+KEYOPT,3,5,5
+ET,4,CONTA177
+KEYOPT,4,2,2
+KEYOPT,4,12,5
+KEYOPT,4,5,0
+KEYOPT,4,11,1
+
+R,2
+
+CMSEL,S,RING_AIR_SURF  
+TYPE,3 ! element type 3 target 170
+REAL,2 ! real constant 2
+ESURF ! create target element
+ALLS
+
+CMSEL,S,AIRCHAMBER_1/AIRCHAMBER_TANK1_1 
+NSEL,R,LOC,X,0.3385e-1  
+TYPE,4 ! element type 4 contact 175
+REAL,2 ! real constant 2
+ESURF ! create contact element
+ALLS
+
+SHSD,2,surface 
+
+CMSEL,S,RING_STAND_SURF 
+D,ALL,ALL
+ALLS
+
+/SOL
+ANTYPE,2
+MODOPT,LANB,10
+EQSLV,SPAR  
+MXPAND,10, , ,0 
+LUMPM,0 
+PSTRES,0
+
+SOLVE 
+FINISH

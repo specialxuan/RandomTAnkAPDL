@@ -1,0 +1,142 @@
+/clear
+/title,Response Spectrum Analysis of a Tank
+
+! /NERR,0,99999999,,,
+
+Radius = 0.1
+Height = 0.4
+HeightWater = 0.1
+Thickness = 0.0005
+ElemSize = 0.015
+Dens_Fluid = 1000
+Sonc_Fluid = 1500
+Ex_Solid = 1.09e11
+PRXY_Solid = 0.34
+Dens_Solid = 4450
+
+/PREP7
+LOCAL,12,0,0,0,0,,-90,,1,1,
+CSYS,12
+WPCSYS,-1
+CSYS,0
+CYLIND,Radius,0,0,HeightWater,0,360,
+
+WPAVE,0,HeightWater,0
+CYLIND,Radius,0,0,Height-HeightWater,0,360,
+VDELE,2
+ADELE,5  
+
+ET,1,220,0,0
+MP,DENS,1,Dens_Fluid 
+MP,SONC,1,Sonc_Fluid
+
+ET,2,281
+MP,EX,2,Ex_Solid
+MP,DENS,2,Dens_Solid
+MP,PRXY,2,PRXY_Solid
+SECTYPE,2,SHELL
+SECDATA,Thickness,2
+ESIZE,ElemSize
+
+TYPE,1 
+MAT,1
+SECNUM,1
+VSEL,,,,1
+VSWEEP,ALL
+
+TYPE,2
+MAT,2
+SECNUM,2
+ASEL,S,,,1
+ASEL,A,,,2
+ASEL,A,,,3
+ASEL,A,,,4
+NSLA,S,1
+ESURF
+
+ALLSEL,ALL,
+
+AMESH,6
+AMESH,7
+AMESH,8
+
+NUMMRG,NODE
+
+DA,1,UX,0
+DA,1,UY,0
+DA,1,UZ,0
+
+! SFA,2,,FREE,,
+ACEL,,9.8,
+
+SFA,1,,FSI
+SFA,2,,FSI
+SFA,3,,FSI
+SFA,4,,FSI
+
+ALLSEL,ALL
+FINISH
+
+/solu
+ANTYPE,MODAL
+MODOPT,UNSYM,50,10,10000,,,BOTH    ! request BOTH left and right eigensolutions
+MXPAND,50,10,10000,yes,,,,
+OUTRES,ALL,,,,
+SOLVE
+FINI
+
+! 进行随机分析
+/SOLU
+ANTYPE,SPECTRUM
+SPOPT,PSD,50,yes
+! 定义基础载荷位置
+DA,1,UY,1.0
+! 定义载荷曲线
+PSDUNIT,1,ACCG,9.81
+DMPRAT,0.02
+! 定义载荷 不需要改
+PSDFRQ,1,,10,100,1000,2000,
+PSDVAL,1,0.02,0.2,0.2,0.02, 
+! 下面一行取消注释画图
+PSDGRAPH,1,,
+! 定义载荷为基础载荷
+PFACT,1,BASE
+! 要计算位移 速度 加速度
+PSDRES,DISP,ABS
+PSDRES,VELO,ABS
+PSDRES,ACEL,ABS
+SOLVE
+FINISH
+
+! 进行模态综合
+/SOLU
+ANTYPE,SPECTRUM,,,,,,
+PSDCOM,0.0,50,TOTAL
+SOLVE,
+FINISH
+
+! 画云图
+/POST1
+SET,3,1,3,,,,,
+PLESOL,S,X,,
+
+! 画曲线
+/POST26
+STORE,PSD,10,,
+! 定义要画什么变量的曲线
+NSOL,2,520,U,Y,UY520,
+RPSD,3,2,,1,1,PSDD520,
+RPSD,4,2,,2,1,PSDV520,
+RPSD,5,2,,3,1,PSDA520,
+NSOL,6,3411,U,X,UX3411,
+RPSD,7,6,,3,1,PSDA3411,
+! 调整曲线图
+PLTIME,0,2000
+/AXLAB,X,FREQ
+/AXLAB,Y,ACCG
+/GROPT,LOGX,ON
+/GROPT,LOGY,ON
+/GROPT,AXDV,OFF
+
+PLVAR,5,,,,,,,,,
+FINISH
