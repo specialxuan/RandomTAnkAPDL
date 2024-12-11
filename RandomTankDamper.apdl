@@ -1,0 +1,382 @@
+/CLEAR
+
+! input mesh
+/INPUT,'Assembly8','in'
+
+/PREP7
+! set TC4 material properties
+MP,EX,1, 10.9e10
+
+! set element type 2,3&4 to 1 (solid185)
+ESEL,S,TYPE,,2
+ESEL,A,TYPE,,3
+ESEL,A,TYPE,,4
+EMODIF,ALL,TYPE,1
+! delete element type 2,3&4
+ETDEL,2 
+ETDEL,3
+ETDEL,4
+ALLS
+
+! set element type 6&7 to 5 (shell181)
+ESEL,S,TYPE,,6
+ESEL,A,TYPE,,7
+EMODIF,ALL,TYPE,5
+! delete element type 6&7
+ETDEL,6
+ETDEL,7
+ALLS
+
+! ! remove water
+! CMSEL,S,WATER/WATER 
+! ESLN,S,1,ALL
+! CMSEL,S,DIA
+! ESLN,U,1,ALL 
+! CMSEL,S,TANK2
+! ESLN,U,1,ALL 
+! EDELE,ALL
+! NDELE,ALL
+! ALLS
+
+! ! remove stand
+! CMSEL,S,STAND/STAND
+! ESLN,S,1,ALL
+! EDELE,ALL
+! NDELE,ALL
+! ALLS
+
+! remove damper
+CMSEL,S,DAMPER/DAMPER
+ESLN,S,1,ALL
+EDELE,ALL
+NDELE,ALL
+ALLS
+
+! remove tank1
+CMSEL,S,TANK1/TANK1_1
+ESLN,S,1,ALL
+EDELE,ALL
+NDELE,ALL
+ALLS
+
+! create shell sections
+SECTYPE,1,SHELL
+SECDATA,0.0012
+SECTYPE,2,SHELL
+SECDATA,0.0005
+! allocate shell sections
+! CMSEL,S,TANK1/TANK1_1
+! ESLN,S,1,ALL 
+EMODIF,ALL,SECNUM,1 
+CMSEL,S,TANK2
+ESLN,S,1,ALL 
+EMODIF,ALL,SECNUM,1 
+CMSEL,S,DIA
+ESLN,S,1,ALL 
+ESEL,U,TYPE,,22
+EMODIF,ALL,SECNUM,2
+ALLS
+
+! create beam elements and sections
+ET,2,188
+SECTYPE,3,BEAM,RECT
+SECDATA,0.0012,0.0012
+! select beam nodes
+ESEL,S,TYPE,,22
+EMODIF,ALL,TYPE,2
+EMODIF,ALL,SECNUM,3
+! delete element type 22
+ETDEL,22
+ALLS
+
+! create contact and target elements
+ET,17,TARGE170
+KEYOPT,17,5,5
+ET,18,CONTA177
+KEYOPT,18,2,2
+KEYOPT,18,12,5
+KEYOPT,18,5,0
+KEYOPT,18,11,1
+! create real constants
+R,5 ! tank1 and ring contact
+R,6 ! tank2 and ring contact
+R,7 ! dia and ring contact
+
+! ! tank1 and ring contact
+! CMSEL,S,RING_TANK1_SURF  
+! TYPE,17 ! element type 17 target 170
+! REAL,5 ! real constant 5
+! ESURF ! create target element
+! ALLS
+! CMSEL,S,TANK1/TANK1_1 
+! NSEL,R,LOC,X,0.3385e-1  
+! TYPE,18 ! element type 17 contact 177
+! REAL,5 ! real constant 5
+! ESURF ! create contact element
+! ALLS
+! SHSD,5,surface 
+
+! tank2 and ring contact
+CMSEL,S,RING_TANK2_SURF  
+TYPE,17 ! element type 17 target 170
+REAL,6 ! real constant 6
+ESURF ! create target element
+ALLS
+CMSEL,S,TANK2
+NSEL,R,LOC,X,0.67782E-001  
+TYPE,18 ! element type 18 contact 177
+REAL,6 ! real constant 6
+ESURF ! create contact element
+ALLS
+SHSD,6,surface 
+
+! dia and ring contact
+CMSEL,S,RING_DIA_SURF  
+TYPE,17 ! element type 17 target 170
+REAL,7 ! real constant 7
+ESURF ! create target element
+ALLS
+CMSEL,S,DIA
+NSEL,R,LOC,X,0.45350E-001  
+TYPE,18 ! element type 18 contact 177
+REAL,7 ! real constant 7
+ESURF ! create contact element
+ALLS
+SHSD,7,surface 
+
+! ring and stand contact
+CMSEL,S,STAND_RING_SURF
+ESLN,S,,ALL
+CMSEL,S,RING_STAND_SURF
+CMSEL,R,RING_BOLT_SURF
+CEINTF,,UX,UY,UZ
+ALLS
+
+! fixed support on stand
+NSEL,S,LOC,X,0.37275
+D,ALL,UX
+D,ALL,UY
+D,ALL,UZ
+ALLS
+
+! ! fixed support on ring
+! CMSEL,S,RING_STAND_SURF
+! D,ALL,UX
+! D,ALL,UY
+! D,ALL,UZ
+! ALLS
+
+! gravity
+ACEL,9.8,,,
+
+! create water element and material
+ET,3,30,0,0
+! incompressible
+KEYOPT,3,6,1
+MP,DENS,2,998.2
+MP,SONC,2,1482.1
+MPDE,EX,2   
+MPDE,PRXY,2 
+MPDE,NUXY,2 
+R,8,20e-6,  
+! select water elements
+CMSEL,S,WATER/WATER 
+ESLN,S,1,ALL
+CMSEL,S,DIA
+ESLN,U,1,ALL 
+CMSEL,S,TANK2
+ESLN,U,1,ALL 
+ESEL,U,TYPE,,2
+! allocate water
+EMODIF,ALL,TYPE,3
+EMODIF,ALL,MAT,2
+EMODIF,ALL,REAL,8
+ALLS
+
+! water and ring contact
+CMSEL,S,RING_WATER_SURF
+CMSEL,A,RING_DIA_SURF
+ESLN,S,,ALL
+ESEL,U,TYPE,,17
+ESEL,U,TYPE,,18
+CMSEL,S,WATER/WATER_RING_SURF
+CMSEL,U,DIA
+CMSEL,U,TANK2
+CEINTF,,UX,UY,UZ
+ALLS
+
+! fluid-solid interface
+CMSEL,S,DIA
+CMSEL,A,TANK2
+CMSEL,A,WATER/WATER_RING_SURF
+ESLN,S,0,ALL
+CMSEL,S,DIA
+ESLN,U,1,ALL 
+CMSEL,S,TANK2
+ESLN,U,1,ALL 
+ESEL,U,TYPE,,2
+ESEL,U,TYPE,,23
+ESEL,U,TYPE,,24
+ESEL,U,TYPE,,25
+CMSEL,S,DIA
+CMSEL,A,TANK2
+CMSEL,A,WATER/WATER_RING_SURF
+SF,ALL,FSI
+ALLS
+
+! CMSEL,S,RING_BOLT_SURF
+! CERIG,42104,ALL,UXYZ
+! ALLS
+! NSEL,S,NODE,,42104
+! D,ALL,UX
+! D,ALL,UY
+! D,ALL,UZ
+! ALLS
+
+! ! create spring elements
+! ET,9,14
+! R,9,6E7
+! N,30001,0.57750E-001, 0.14874     ,-0.85875E-001
+! ! N,30002,0.57750E-001, 0.14874     , 0.85880E-001
+! ! N,30003,0.57750E-001,-0.29404E-005, 0.17175     
+! ! N,30004,0.57750E-001,-0.14874     , 0.85875E-001
+! ! N,30005,0.57750E-001,-0.14874     ,-0.85880E-001
+! ! N,30006,0.57750E-001, 0.29404E-005,-0.17175     
+! TYPE,9
+! REAL,9
+! E,2830,30001
+! ! E,3427,30002
+! ! E,3954,30003
+! ! E,4479,30004
+! ! E,5001,30005
+! ! E,5529,30006
+! NSEL,S,NODE,,30001,
+! ! NSEL,A,NODE,,30002,
+! ! NSEL,A,NODE,,30003,
+! ! NSEL,A,NODE,,30004,
+! ! NSEL,A,NODE,,30005,
+! ! NSEL,A,NODE,,30006,
+! D,ALL,UX
+! D,ALL,UY
+! D,ALL,UZ
+! ALLS
+
+
+! MP,DENS,7,1
+! MP,EX,7,178571428
+! MP,PRXY,7,0
+! CMSEL,S,DAMPER/DAMPER
+! ESLN,S,1,ALL
+! ! allocate spring
+! EMODIF,ALL,MAT,7
+! ALLS
+
+! ! damper and ring contact
+! CMSEL,S,RING_STAND_SURF
+! CMSEL,U,RING_BOLT_SURF
+! ESLN,S,,ALL
+! CMSEL,S,DAMPER_RING_SURF
+! CEINTF,,UX,UY,UZ
+! ALLS
+
+! ! fixed support on ring
+! CMSEL,S,RING_BOLT_SURF
+! CMSEL,U,RING_STAND_SURF
+! D,ALL,UY
+! D,ALL,UZ
+! ALLS
+
+! ! fixed support on damper
+! CMSEL,S,DAMPER_STAND_SURF
+! D,ALL,UX
+! D,ALL,UY
+! D,ALL,UZ
+! ALLS
+
+! ! modal analysis
+! /SOLU
+! ANTYPE,2
+! MODOPT,LANB,10
+! EQSLV,SPAR  
+! MXPAND,10,,,1 
+! OUTRES,ALL,,,,
+! SOLVE 
+! FINISH
+
+! ! list all modal frequency
+! /POST1
+! SET,LIST
+
+
+! modal analysis
+/solu
+ANTYPE,MODAL
+MODOPT,UNSYM,10,10,2000,,,BOTH    ! request BOTH left and right eigensolutions
+MXPAND,10,10,2000,yes,,,,
+OUTRES,ALL,ALL,,,
+SOLVE
+FINISH
+
+! list all modal frequency
+/POST1
+SET,LIST
+
+! random analysis
+/SOLU
+ANTYPE,SPECTRUM
+SPOPT,PSD,10,yes
+! define base excitation
+! NSEL,S,LOC,X,0.37275
+! CMSEL,S,DAMPER_STAND_SURF
+NSEL,S,NODE,,42104
+D,ALL,UX,1.0
+ALLS
+! define damp
+DMPRAT,0.02
+! define excitation type
+PSDUNIT,1,ACCG,9.81
+! define excitation curve
+PSDFRQ,1,,20,80,350,2000,
+PSDVAL,1,0.0025,0.01,0.01,0.0017, 
+! plot curve
+! PSDGRAPH,1,,
+! calculate participation factor
+PFACT,1,BASE
+! calculate dispalcement velocity accelration
+PSDRES,DISP,ABS
+PSDRES,VELO,ABS
+PSDRES,ACEL,ABS
+SOLVE
+FINISH
+
+! combine modes
+/SOLU
+ANTYPE,SPECTRUM,,,,,,
+PSDCOM,0.0,138,TOTAL
+SOLVE,
+FINISH
+
+! ! plot contour
+! /POST1
+! SET,3,1,3,,,,,
+! PLESOL,S,X,,
+
+! plot psd curve
+/POST26
+STORE,PSD,10,,
+! define variable
+NSOL,2,19106,U,X,UX19106,
+RPSD,3,2,,3,1,PSDA19106,
+NSOL,4,20703,U,X,UX20703,
+RPSD,5,4,,3,1,PSDA20703,
+NSOL,6,5042,U,X,UX5042,
+RPSD,7,6,,3,1,PSDA5042,
+! adjust plot
+PLTIME,20,2000
+/AXLAB,X,FREQ
+/AXLAB,Y,ACCG
+/GROPT,LOGX,ON
+/GROPT,LOGY,ON
+/GROPT,AXDV,OFF
+! plot
+PLVAR,3,5,7,,,,,,,
