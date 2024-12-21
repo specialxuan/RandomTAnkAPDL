@@ -38,12 +38,12 @@ ALLS
 ! NDELE,ALL
 ! ALLS
 
-! ! remove stand
-! CMSEL,S,STAND/STAND
-! ESLN,S,1,ALL
-! EDELE,ALL
-! NDELE,ALL
-! ALLS
+! remove stand
+CMSEL,S,STAND/STAND
+ESLN,S,1,ALL
+EDELE,ALL
+NDELE,ALL
+ALLS
 
 ! remove damper
 CMSEL,S,DAMPER/DAMPER
@@ -52,12 +52,12 @@ EDELE,ALL
 NDELE,ALL
 ALLS
 
-! remove tank1
-CMSEL,S,TANK1/TANK1_1
-ESLN,S,1,ALL
-EDELE,ALL
-NDELE,ALL
-ALLS
+! ! remove tank1
+! CMSEL,S,TANK1/TANK1_1
+! ESLN,S,1,ALL
+! EDELE,ALL
+! NDELE,ALL
+! ALLS
 
 ! create shell sections
 SECTYPE,1,SHELL
@@ -65,8 +65,8 @@ SECDATA,0.0012
 SECTYPE,2,SHELL
 SECDATA,0.0005
 ! allocate shell sections
-! CMSEL,S,TANK1/TANK1_1
-! ESLN,S,1,ALL 
+CMSEL,S,TANK1/TANK1_1
+ESLN,S,1,ALL 
 EMODIF,ALL,SECNUM,1 
 CMSEL,S,TANK2
 ESLN,S,1,ALL 
@@ -102,19 +102,19 @@ R,5 ! tank1 and ring contact
 R,6 ! tank2 and ring contact
 R,7 ! dia and ring contact
 
-! ! tank1 and ring contact
-! CMSEL,S,RING_TANK1_SURF  
-! TYPE,17 ! element type 17 target 170
-! REAL,5 ! real constant 5
-! ESURF ! create target element
-! ALLS
-! CMSEL,S,TANK1/TANK1_1 
-! NSEL,R,LOC,X,0.3385e-1  
-! TYPE,18 ! element type 17 contact 177
-! REAL,5 ! real constant 5
-! ESURF ! create contact element
-! ALLS
-! SHSD,5,surface 
+! tank1 and ring contact
+CMSEL,S,RING_TANK1_SURF  
+TYPE,17 ! element type 17 target 170
+REAL,5 ! real constant 5
+ESURF ! create target element
+ALLS
+CMSEL,S,TANK1/TANK1_1 
+NSEL,R,LOC,X,0.3385e-1  
+TYPE,18 ! element type 17 contact 177
+REAL,5 ! real constant 5
+ESURF ! create contact element
+ALLS
+SHSD,5,surface 
 
 ! tank2 and ring contact
 CMSEL,S,RING_TANK2_SURF  
@@ -144,27 +144,27 @@ ESURF ! create contact element
 ALLS
 SHSD,7,surface 
 
-! ring and stand contact
-CMSEL,S,STAND_RING_SURF
-ESLN,S,,ALL
-CMSEL,S,RING_STAND_SURF
-CMSEL,R,RING_BOLT_SURF
-CEINTF,,UX,UY,UZ
-ALLS
-
-! fixed support on stand
-NSEL,S,LOC,X,0.37275
-D,ALL,UX
-D,ALL,UY
-D,ALL,UZ
-ALLS
-
-! ! fixed support on ring
+! ! ring and stand contact
+! CMSEL,S,STAND_RING_SURF
+! ESLN,S,,ALL
 ! CMSEL,S,RING_STAND_SURF
+! CMSEL,R,RING_BOLT_SURF
+! CEINTF,,UX,UY,UZ
+! ALLS
+
+! ! fixed support on stand
+! NSEL,S,LOC,X,0.37275
 ! D,ALL,UX
 ! D,ALL,UY
 ! D,ALL,UZ
 ! ALLS
+
+! fixed support on ring
+CMSEL,S,RING_BOLT_SURF
+D,ALL,UX
+D,ALL,UY
+D,ALL,UZ
+ALLS
 
 ! gravity
 ACEL,9.8,,,
@@ -242,8 +242,8 @@ ALLS
 ! modal analysis
 /solu
 ANTYPE,MODAL
-MODOPT,UNSYM,10,10,2000,,,BOTH    ! request BOTH left and right eigensolutions
-MXPAND,10,10,2000,yes,,,,
+MODOPT,UNSYM,300,10,2200,,,BOTH    ! request BOTH left and right eigensolutions
+MXPAND,300,10,2200,yes,,,,
 OUTRES,ALL,ALL,,,
 SOLVE
 FINISH
@@ -255,11 +255,9 @@ SET,LIST
 ! random analysis
 /SOLU
 ANTYPE,SPECTRUM
-SPOPT,PSD,10,yes
+SPOPT,PSD,194,yes
 ! define base excitation
-! NSEL,S,LOC,X,0.37275
-! CMSEL,S,DAMPER_STAND_SURF
-NSEL,S,NODE,,42104
+CMSEL,S,RING_BOLT_SURF
 D,ALL,UX,1.0
 ALLS
 ! define damp
@@ -311,3 +309,5 @@ PLTIME,20,2000
 /GROPT,AXDV,OFF
 ! plot
 PLVAR,3,5,7,,,,,,,
+
+! start from 10:23
