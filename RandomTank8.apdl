@@ -1,5 +1,17 @@
 /CLEAR
 
+! reverse video
+/RGB,INDEX,100,100,100, 0   
+/RGB,INDEX, 80, 80, 80,13   
+/RGB,INDEX, 60, 60, 60,14   
+/RGB,INDEX, 0, 0, 0,15  
+/REPLOT
+! set view angle
+/AUTO,1
+/VIEW,1,-1,-1,0
+/DIST,1,0.26,0
+/REP,FAST
+
 ! input mesh
 /INPUT,'Assembly8','in'
 
@@ -169,6 +181,20 @@ ALLS
 ! gravity
 ACEL,9.8,,,
 
+! ! modal analysis
+! /SOLU
+! ANTYPE,2
+! MODOPT,LANB,300,10,2100
+! EQSLV,SPAR
+! MXPAND,300,10,2100,1 
+! OUTRES,ALL,,,,
+! SOLVE 
+! FINISH
+
+! ! list all modal frequency
+! /POST1
+! SET,LIST
+
 ! create water element and material
 ET,3,30,0,0
 ! incompressible
@@ -242,8 +268,8 @@ ALLS
 ! modal analysis
 /solu
 ANTYPE,MODAL
-MODOPT,UNSYM,300,10,2200,,,BOTH    ! request BOTH left and right eigensolutions
-MXPAND,300,10,2200,yes,,,,
+MODOPT,UNSYM,300,10,2100,,,BOTH    ! request BOTH left and right eigensolutions
+MXPAND,300,10,2100,yes,,,,
 OUTRES,ALL,ALL,,,
 SOLVE
 FINISH
@@ -251,6 +277,12 @@ FINISH
 ! list all modal frequency
 /POST1
 SET,LIST
+! CMSEL,S,TANK1/TANK1_1
+! ESLN,U,0,ALL
+! ESEL,U,TYPE,,23
+! ESEL,U,TYPE,,24
+! ESEL,U,TYPE,,25
+! ESEL,U,TYPE,,3
 
 ! random analysis
 /SOLU
@@ -285,21 +317,33 @@ PSDCOM,0.0,138,TOTAL
 SOLVE,
 FINISH
 
-! ! plot contour
-! /POST1
-! SET,3,1,3,,,,,
-! PLESOL,S,X,,
+! plot contour
+/POST1
+! CMSEL,S,TANK1/TANK1_1
+! ESLN,U,0,ALL
+ESEL,U,TYPE,,23
+ESEL,U,TYPE,,24
+ESEL,U,TYPE,,25
+ESEL,U,TYPE,,3
+! plot stress
+SET,3,1,3,,,,,
+PLNSOL,S,EQV,,
+! plot acceleration
+SET,5,1,3,,,,,
+PLNSOL,U,X,,
 
 ! plot psd curve
 /POST26
 STORE,PSD,10,,
 ! define variable
-NSOL,2,19106,U,X,UX19106,
-RPSD,3,2,,3,1,PSDA19106,
-NSOL,4,20703,U,X,UX20703,
-RPSD,5,4,,3,1,PSDA20703,
-NSOL,6,5042,U,X,UX5042,
-RPSD,7,6,,3,1,PSDA5042,
+NSOL,2,16709,U,X,UX16709,
+RPSD,3,2,,3,1,PSDA16709,
+NSOL,4,16917,U,X,UX16917,
+RPSD,5,4,,3,1,PSDA16917,
+NSOL,6,40605,U,X,UX40605,
+RPSD,7,6,,3,1,PSDA40605,
+NSOL,8,2532,U,X,UX2532,
+RPSD,9,8,,3,1,PSDA2532,
 ! adjust plot
 PLTIME,20,2000
 /AXLAB,X,FREQ
@@ -308,6 +352,11 @@ PLTIME,20,2000
 /GROPT,LOGY,ON
 /GROPT,AXDV,OFF
 ! plot
-PLVAR,3,5,7,,,,,,,
+PLVAR,3,5,7,9,,,,,,
+
+! AirChamber Endpoint: 2532
+! Diaphragm Endpoint: 16709
+! WaterChamber Endpoint: 16917
+! Lug:40605
 
 ! start from 10:23
