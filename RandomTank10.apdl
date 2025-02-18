@@ -13,7 +13,7 @@
 /REP,FAST
 
 ! input mesh
-/INPUT,'Assembly8','in'
+/INPUT,'Assembly10','in'
 
 /PREP7
 ! set TC4 material properties
@@ -31,24 +31,24 @@ ETDEL,4
 ALLS
 
 ! set element type 6&7 to 5 (shell181)
-ESEL,S,TYPE,,6
-ESEL,A,TYPE,,7
+ESEL,S,TYPE,,18
+ESEL,A,TYPE,,19
 EMODIF,ALL,TYPE,5
 ! delete element type 6&7
-ETDEL,6
-ETDEL,7
+ETDEL,18
+ETDEL,19
 ALLS
 
-! remove water
-CMSEL,S,WATER/WATER 
-ESLN,S,1,ALL
-CMSEL,S,DIA
-ESLN,U,1,ALL 
-CMSEL,S,TANK2
-ESLN,U,1,ALL 
-EDELE,ALL
-NDELE,ALL
-ALLS
+! ! remove water
+! CMSEL,S,WATER/WATER 
+! ESLN,S,1,ALL
+! CMSEL,S,DIA
+! ESLN,U,1,ALL 
+! CMSEL,S,TANK2
+! ESLN,U,1,ALL 
+! EDELE,ALL
+! NDELE,ALL
+! ALLS
 
 ! remove stand
 CMSEL,S,STAND/STAND
@@ -64,28 +64,28 @@ EDELE,ALL
 NDELE,ALL
 ALLS
 
-! remove tank1
-CMSEL,S,TANK1/TANK1_1
-ESLN,S,1,ALL
-EDELE,ALL
-NDELE,ALL
-ALLS
+! ! remove tank1
+! CMSEL,S,TANK1/TANK1_1
+! ESLN,S,1,ALL
+! EDELE,ALL
+! NDELE,ALL
+! ALLS
 
 ! create shell sections
 SECTYPE,1,SHELL
-SECDATA,0.0012
+SECDATA,0.0011
 SECTYPE,2,SHELL
-SECDATA,0.0005
+SECDATA,0.0007
 ! allocate shell sections
-! CMSEL,S,TANK1/TANK1_1
-! ESLN,S,1,ALL 
+CMSEL,S,TANK1/TANK1_1
+ESLN,S,1,ALL 
 EMODIF,ALL,SECNUM,1 
 CMSEL,S,TANK2
 ESLN,S,1,ALL 
 EMODIF,ALL,SECNUM,1 
 CMSEL,S,DIA
 ESLN,S,1,ALL 
-ESEL,U,TYPE,,22
+ESEL,U,TYPE,,21
 EMODIF,ALL,SECNUM,2
 ALLS
 
@@ -94,11 +94,11 @@ ET,2,188
 SECTYPE,3,BEAM,RECT
 SECDATA,0.0012,0.0012
 ! select beam nodes
-ESEL,S,TYPE,,22
+ESEL,S,TYPE,,21
 EMODIF,ALL,TYPE,2
 EMODIF,ALL,SECNUM,3
 ! delete element type 22
-ETDEL,22
+ETDEL,21
 ALLS
 
 ! create contact and target elements
@@ -114,19 +114,19 @@ R,5 ! tank1 and ring contact
 R,6 ! tank2 and ring contact
 R,7 ! dia and ring contact
 
-! ! tank1 and ring contact
-! CMSEL,S,RING_TANK1_SURF  
-! TYPE,17 ! element type 17 target 170
-! REAL,5 ! real constant 5
-! ESURF ! create target element
-! ALLS
-! CMSEL,S,TANK1/TANK1_1 
-! NSEL,R,LOC,X,0.3385e-1  
-! TYPE,18 ! element type 17 contact 177
-! REAL,5 ! real constant 5
-! ESURF ! create contact element
-! ALLS
-! SHSD,5,surface 
+! tank1 and ring contact
+CMSEL,S,RING_TANK1_SURF  
+TYPE,17 ! element type 17 target 170
+REAL,5 ! real constant 5
+ESURF ! create target element
+ALLS
+CMSEL,S,TANK1/TANK1_1 
+NSEL,R,LOC,X,0.3385e-1  
+TYPE,18 ! element type 17 contact 177
+REAL,5 ! real constant 5
+ESURF ! create contact element
+ALLS
+SHSD,5,surface 
 
 ! tank2 and ring contact
 CMSEL,S,RING_TANK2_SURF  
@@ -148,8 +148,7 @@ TYPE,17 ! element type 17 target 170
 REAL,7 ! real constant 7
 ESURF ! create target element
 ALLS
-CMSEL,S,DIA
-NSEL,R,LOC,X,0.45350E-001  
+CMSEL,S,DIA_RING_SURF
 TYPE,18 ! element type 18 contact 177
 REAL,7 ! real constant 7
 ESURF ! create contact element
@@ -181,87 +180,87 @@ ALLS
 ! gravity
 ACEL,9.8,,,
 
-! modal analysis
-/SOLU
-ANTYPE,2
-MODOPT,LANB,300,10,2100
-EQSLV,SPAR
-MXPAND,300,10,2100,1 
-OUTRES,ALL,,,,
-SOLVE 
-FINISH
-
-! list all modal frequency
-/POST1
-SET,LIST
-
-! ! create water element and material
-! ET,3,30,0,0
-! ! incompressible
-! KEYOPT,3,6,1
-! MP,DENS,2,998.2
-! MP,SONC,2,1482.1
-! MPDE,EX,2   
-! MPDE,PRXY,2 
-! MPDE,NUXY,2 
-! R,8,20e-6,  
-! ! select water elements
-! CMSEL,S,WATER/WATER 
-! ESLN,S,1,ALL
-! CMSEL,S,DIA
-! ESLN,U,1,ALL 
-! CMSEL,S,TANK2
-! ESLN,U,1,ALL 
-! ESEL,U,TYPE,,2
-! ! allocate water
-! EMODIF,ALL,TYPE,3
-! EMODIF,ALL,MAT,2
-! EMODIF,ALL,REAL,8
-! ALLS
-
-! ! water and ring contact
-! CMSEL,S,RING_WATER_SURF
-! CMSEL,A,RING_DIA_SURF
-! ESLN,S,,ALL
-! ESEL,U,TYPE,,17
-! ESEL,U,TYPE,,18
-! CMSEL,S,WATER/WATER_RING_SURF
-! CMSEL,U,DIA
-! CMSEL,U,TANK2
-! CEINTF,,UX,UY,UZ
-! ALLS
-
-! ! fluid-solid interface
-! CMSEL,S,DIA
-! CMSEL,A,TANK2
-! CMSEL,A,WATER/WATER_RING_SURF
-! ESLN,S,0,ALL
-! CMSEL,S,DIA
-! ESLN,U,1,ALL 
-! CMSEL,S,TANK2
-! ESLN,U,1,ALL 
-! ESEL,U,TYPE,,2
-! ESEL,U,TYPE,,23
-! ESEL,U,TYPE,,24
-! ESEL,U,TYPE,,25
-! CMSEL,S,DIA
-! CMSEL,A,TANK2
-! CMSEL,A,WATER/WATER_RING_SURF
-! SF,ALL,FSI
-! ALLS
-
 ! ! modal analysis
-! /solu
-! ANTYPE,MODAL
-! MODOPT,UNSYM,300,10,2100,,,BOTH    ! request BOTH left and right eigensolutions
-! MXPAND,300,10,2100,yes,,,,
-! OUTRES,ALL,ALL,,,
-! SOLVE
+! /SOLU
+! ANTYPE,2
+! MODOPT,LANB,300,10,2100
+! EQSLV,SPAR
+! MXPAND,300,10,2100,1 
+! OUTRES,ALL,,,,
+! SOLVE 
 ! FINISH
 
 ! ! list all modal frequency
 ! /POST1
 ! SET,LIST
+
+! create water element and material
+ET,3,30,0,0
+! incompressible
+KEYOPT,3,6,1
+MP,DENS,2,998.2
+MP,SONC,2,1482.1
+MPDE,EX,2   
+MPDE,PRXY,2 
+MPDE,NUXY,2 
+R,8,20e-6,  
+! select water elements
+CMSEL,S,WATER/WATER 
+ESLN,S,1,ALL
+CMSEL,S,DIA
+ESLN,U,1,ALL 
+CMSEL,S,TANK2
+ESLN,U,1,ALL 
+ESEL,U,TYPE,,2
+! allocate water
+EMODIF,ALL,TYPE,3
+EMODIF,ALL,MAT,2
+EMODIF,ALL,REAL,8
+ALLS
+
+! water and ring contact
+CMSEL,S,RING_WATER_SURF
+CMSEL,A,RING_DIA_SURF
+ESLN,S,,ALL
+ESEL,U,TYPE,,17
+ESEL,U,TYPE,,18
+CMSEL,S,WATER/WATER_RING_SURF
+CMSEL,U,DIA
+CMSEL,U,TANK2
+CEINTF,,UX,UY,UZ
+ALLS
+
+! fluid-solid interface
+CMSEL,S,DIA
+CMSEL,A,TANK2
+CMSEL,A,WATER/WATER_RING_SURF
+ESLN,S,0,ALL
+CMSEL,S,DIA
+ESLN,U,1,ALL 
+CMSEL,S,TANK2
+ESLN,U,1,ALL 
+ESEL,U,TYPE,,2
+ESEL,U,TYPE,,22
+ESEL,U,TYPE,,23
+ESEL,U,TYPE,,24
+CMSEL,S,DIA
+CMSEL,A,TANK2
+CMSEL,A,WATER/WATER_RING_SURF
+SF,ALL,FSI
+ALLS
+
+! modal analysis
+/solu
+ANTYPE,MODAL
+MODOPT,UNSYM,300,10,2100,,,BOTH    ! request BOTH left and right eigensolutions
+MXPAND,300,10,2100,yes,,,,
+OUTRES,ALL,ALL,,,
+SOLVE
+FINISH
+
+! list all modal frequency
+/POST1
+SET,LIST
 
 ! random analysis
 /SOLU
@@ -298,12 +297,12 @@ FINISH
 
 ! plot contour
 /POST1
-! CMSEL,S,TANK1/TANK1_1
-! ESLN,U,0,ALL
-! ESEL,U,TYPE,,23
-! ESEL,U,TYPE,,24
-! ESEL,U,TYPE,,25
-! ESEL,U,TYPE,,3
+CMSEL,S,TANK1/TANK1_1
+ESLN,U,0,ALL
+ESEL,U,TYPE,,22
+ESEL,U,TYPE,,23
+ESEL,U,TYPE,,24
+ESEL,U,TYPE,,3
 ! plot stress
 SET,3,1,3,,,,,
 PLNSOL,S,EQV,,
