@@ -6,10 +6,16 @@
 /RGB,INDEX, 60, 60, 60,14   
 /RGB,INDEX, 0, 0, 0,15  
 /REPLOT
+! remove logo
+/PLOPTS,LOGO,0
+/PLOPTS,DATE,0
+/PLOPTS,FRAME,0
+/TSPEC,,40,
 ! set view angle
 /AUTO,1
-/VIEW,1,-1,-1,0
+/VIEW,1,-1,-1,0 ! top:1,-1,-1,0 bottom:1,1,1,0
 /DIST,1,0.26,0
+! /ANG,1,-90,ZS,1 ! turn image
 /REP,FAST
 
 ! input mesh
@@ -39,23 +45,23 @@ ETDEL,6
 ETDEL,7
 ALLS
 
-! remove water
-CMSEL,S,WATER/WATER 
-ESLN,S,1,ALL
-CMSEL,S,DIA
-ESLN,U,1,ALL 
-CMSEL,S,TANK2
-ESLN,U,1,ALL 
-EDELE,ALL
-NDELE,ALL
-ALLS
+! ! remove water
+! CMSEL,S,WATER/WATER 
+! ESLN,S,1,ALL
+! CMSEL,S,DIA
+! ESLN,U,1,ALL 
+! CMSEL,S,TANK2
+! ESLN,U,1,ALL 
+! EDELE,ALL
+! NDELE,ALL
+! ALLS
 
-! remove stand
-CMSEL,S,STAND/STAND
-ESLN,S,1,ALL
-EDELE,ALL
-NDELE,ALL
-ALLS
+! ! remove stand
+! CMSEL,S,STAND/STAND
+! ESLN,S,1,ALL
+! EDELE,ALL
+! NDELE,ALL
+! ALLS
 
 ! remove damper
 CMSEL,S,DAMPER/DAMPER
@@ -64,12 +70,12 @@ EDELE,ALL
 NDELE,ALL
 ALLS
 
-! remove tank1
-CMSEL,S,TANK1/TANK1_1
-ESLN,S,1,ALL
-EDELE,ALL
-NDELE,ALL
-ALLS
+! ! remove tank1
+! CMSEL,S,TANK1/TANK1_1
+! ESLN,S,1,ALL
+! EDELE,ALL
+! NDELE,ALL
+! ALLS
 
 ! create shell sections
 SECTYPE,1,SHELL
@@ -77,8 +83,8 @@ SECDATA,0.0012
 SECTYPE,2,SHELL
 SECDATA,0.0005
 ! allocate shell sections
-! CMSEL,S,TANK1/TANK1_1
-! ESLN,S,1,ALL 
+CMSEL,S,TANK1/TANK1_1
+ESLN,S,1,ALL 
 EMODIF,ALL,SECNUM,1 
 CMSEL,S,TANK2
 ESLN,S,1,ALL 
@@ -114,19 +120,19 @@ R,5 ! tank1 and ring contact
 R,6 ! tank2 and ring contact
 R,7 ! dia and ring contact
 
-! ! tank1 and ring contact
-! CMSEL,S,RING_TANK1_SURF  
-! TYPE,17 ! element type 17 target 170
-! REAL,5 ! real constant 5
-! ESURF ! create target element
-! ALLS
-! CMSEL,S,TANK1/TANK1_1 
-! NSEL,R,LOC,X,0.3385e-1  
-! TYPE,18 ! element type 17 contact 177
-! REAL,5 ! real constant 5
-! ESURF ! create contact element
-! ALLS
-! SHSD,5,surface 
+! tank1 and ring contact
+CMSEL,S,RING_TANK1_SURF  
+TYPE,17 ! element type 17 target 170
+REAL,5 ! real constant 5
+ESURF ! create target element
+ALLS
+CMSEL,S,TANK1/TANK1_1 
+NSEL,R,LOC,X,0.3385e-1  
+TYPE,18 ! element type 17 contact 177
+REAL,5 ! real constant 5
+ESURF ! create contact element
+ALLS
+SHSD,5,surface 
 
 ! tank2 and ring contact
 CMSEL,S,RING_TANK2_SURF  
@@ -156,119 +162,120 @@ ESURF ! create contact element
 ALLS
 SHSD,7,surface 
 
-! ! ring and stand contact
-! CMSEL,S,STAND_RING_SURF
-! ESLN,S,,ALL
-! CMSEL,S,RING_STAND_SURF
-! CMSEL,R,RING_BOLT_SURF
-! CEINTF,,UX,UY,UZ
-! ALLS
+! ring and stand contact
+CMSEL,S,STAND_RING_SURF
+ESLN,S,,ALL
+CMSEL,S,RING_STAND_SURF
+CMSEL,R,RING_BOLT_SURF
+CEINTF,,UX,UY,UZ
+ALLS
 
-! ! fixed support on stand
-! NSEL,S,LOC,X,0.37275
-! D,ALL,UX
-! D,ALL,UY
-! D,ALL,UZ
-! ALLS
-
-! fixed support on ring
-CMSEL,S,RING_BOLT_SURF
+! fixed support on stand
+NSEL,S,LOC,X,0.37275
 D,ALL,UX
 D,ALL,UY
 D,ALL,UZ
 ALLS
 
+! ! fixed support on ring
+! CMSEL,S,RING_BOLT_SURF
+! D,ALL,UX
+! D,ALL,UY
+! D,ALL,UZ
+! ALLS
+
 ! gravity
 ACEL,9.8,,,
 
-! modal analysis
-/SOLU
-ANTYPE,2
-MODOPT,LANB,300,10,2100
-EQSLV,SPAR
-MXPAND,300,10,2100,1 
-OUTRES,ALL,,,,
-SOLVE 
-FINISH
-
-! list all modal frequency
-/POST1
-SET,LIST
-
-! ! create water element and material
-! ET,3,30,0,0
-! ! incompressible
-! KEYOPT,3,6,1
-! MP,DENS,2,998.2
-! MP,SONC,2,1482.1
-! MPDE,EX,2   
-! MPDE,PRXY,2 
-! MPDE,NUXY,2 
-! R,8,20e-6,  
-! ! select water elements
-! CMSEL,S,WATER/WATER 
-! ESLN,S,1,ALL
-! CMSEL,S,DIA
-! ESLN,U,1,ALL 
-! CMSEL,S,TANK2
-! ESLN,U,1,ALL 
-! ESEL,U,TYPE,,2
-! ! allocate water
-! EMODIF,ALL,TYPE,3
-! EMODIF,ALL,MAT,2
-! EMODIF,ALL,REAL,8
-! ALLS
-
-! ! water and ring contact
-! CMSEL,S,RING_WATER_SURF
-! CMSEL,A,RING_DIA_SURF
-! ESLN,S,,ALL
-! ESEL,U,TYPE,,17
-! ESEL,U,TYPE,,18
-! CMSEL,S,WATER/WATER_RING_SURF
-! CMSEL,U,DIA
-! CMSEL,U,TANK2
-! CEINTF,,UX,UY,UZ
-! ALLS
-
-! ! fluid-solid interface
-! CMSEL,S,DIA
-! CMSEL,A,TANK2
-! CMSEL,A,WATER/WATER_RING_SURF
-! ESLN,S,0,ALL
-! CMSEL,S,DIA
-! ESLN,U,1,ALL 
-! CMSEL,S,TANK2
-! ESLN,U,1,ALL 
-! ESEL,U,TYPE,,2
-! ESEL,U,TYPE,,23
-! ESEL,U,TYPE,,24
-! ESEL,U,TYPE,,25
-! CMSEL,S,DIA
-! CMSEL,A,TANK2
-! CMSEL,A,WATER/WATER_RING_SURF
-! SF,ALL,FSI
-! ALLS
-
 ! ! modal analysis
-! /solu
-! ANTYPE,MODAL
-! MODOPT,UNSYM,300,10,2100,,,BOTH    ! request BOTH left and right eigensolutions
-! MXPAND,300,10,2100,yes,,,,
-! OUTRES,ALL,ALL,,,
-! SOLVE
+! /SOLU
+! ANTYPE,2
+! MODOPT,LANB,300,10,2100
+! EQSLV,SPAR
+! MXPAND,300,10,2100,1 
+! OUTRES,ALL,,,,
+! SOLVE 
 ! FINISH
 
 ! ! list all modal frequency
 ! /POST1
 ! SET,LIST
 
+! create water element and material
+ET,3,30,0,0
+! incompressible
+KEYOPT,3,6,1
+MP,DENS,2,998.2
+MP,SONC,2,1482.1
+MPDE,EX,2   
+MPDE,PRXY,2 
+MPDE,NUXY,2 
+R,8,20e-6,  
+! select water elements
+CMSEL,S,WATER/WATER 
+ESLN,S,1,ALL
+CMSEL,S,DIA
+ESLN,U,1,ALL 
+CMSEL,S,TANK2
+ESLN,U,1,ALL 
+ESEL,U,TYPE,,2
+! allocate water
+EMODIF,ALL,TYPE,3
+EMODIF,ALL,MAT,2
+EMODIF,ALL,REAL,8
+ALLS
+
+! water and ring contact
+CMSEL,S,RING_WATER_SURF
+CMSEL,A,RING_DIA_SURF
+ESLN,S,,ALL
+ESEL,U,TYPE,,17
+ESEL,U,TYPE,,18
+CMSEL,S,WATER/WATER_RING_SURF
+CMSEL,U,DIA
+CMSEL,U,TANK2
+CEINTF,,UX,UY,UZ
+ALLS
+
+! fluid-solid interface
+CMSEL,S,DIA
+CMSEL,A,TANK2
+CMSEL,A,WATER/WATER_RING_SURF
+ESLN,S,0,ALL
+CMSEL,S,DIA
+ESLN,U,1,ALL 
+CMSEL,S,TANK2
+ESLN,U,1,ALL 
+ESEL,U,TYPE,,2
+ESEL,U,TYPE,,23
+ESEL,U,TYPE,,24
+ESEL,U,TYPE,,25
+CMSEL,S,DIA
+CMSEL,A,TANK2
+CMSEL,A,WATER/WATER_RING_SURF
+SF,ALL,FSI
+ALLS
+
+! modal analysis
+/solu
+ANTYPE,MODAL
+MODOPT,UNSYM,300,10,2100,,,BOTH    ! request BOTH left and right eigensolutions
+MXPAND,300,10,2100,yes,,,,
+OUTRES,ALL,ALL,,,
+SOLVE
+FINISH
+
+! list all modal frequency
+/POST1
+SET,LIST
+
 ! random analysis
 /SOLU
 ANTYPE,SPECTRUM
 SPOPT,PSD,300,yes
 ! define base excitation
-CMSEL,S,RING_BOLT_SURF
+! CMSEL,S,RING_BOLT_SURF
+NSEL,S,LOC,X,0.37275
 D,ALL,UY,1.0
 ALLS
 ! define damp
@@ -276,10 +283,12 @@ DMPRAT,0.02
 ! define excitation type
 PSDUNIT,1,ACCG,9.81
 ! define excitation curve
-PSDFRQ,1,,20,80,350,2000,
-PSDVAL,1,0.0025,0.01,0.01,0.0017, 
+! PSDFRQ,1,,20,80,350,2000, ! -12dB
+! PSDVAL,1,0.0025,0.01,0.01,0.0017, 
+PSDFRQ,1,,20,80,350,2000, ! -21dB
+PSDVAL,1,0.000314731,0.001258925,0.001258925,0.000214017, 
 ! plot curve
-! PSDGRAPH,1,,
+PSDGRAPH,1,,
 ! calculate participation factor
 PFACT,1,BASE
 ! calculate dispalcement velocity accelration
@@ -298,18 +307,37 @@ FINISH
 
 ! plot contour
 /POST1
-! CMSEL,S,TANK1/TANK1_1
-! ESLN,U,0,ALL
-! ESEL,U,TYPE,,23
-! ESEL,U,TYPE,,24
-! ESEL,U,TYPE,,25
-! ESEL,U,TYPE,,3
+ALLSEL
+CMSEL,S,TANK1/TANK1_1
+CMSEL,A,STAND/STAND
+ESLN,U,0,ALL
+ESEL,U,TYPE,,23
+ESEL,U,TYPE,,24
+ESEL,U,TYPE,,25
+ESEL,U,TYPE,,3
+NSEL,ALL
+! remove lugs
+CSYS,6
+NSEL,S,LOC,X,0.1601,10
+ESLN,U,1,ALL
+CSYS,0
 ! plot stress
 SET,3,1,3,,,,,
 PLNSOL,S,EQV,,
 ! plot acceleration
 SET,5,1,3,,,,,
 PLNSOL,U,X,,
+
+! ! export jpg
+! /SHOW,JPEG,,0   
+! JPEG,QUAL,75,   
+! JPEG,ORIENT,HORIZ   
+! JPEG,COLOR,2
+! JPEG,TMOD,1 
+! /GFILE,1200,
+! /REPLOT 
+! /SHOW,CLOSE 
+! /DEVICE,VECTOR,0
 
 ! plot psd curve
 /POST26
